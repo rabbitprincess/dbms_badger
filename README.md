@@ -2,7 +2,7 @@
 db library implement badgerdb ( github.com/dgraph-io/badger/v2 )
 
 
-range type support
+support range type
   - beginWith
   - between
   - gt
