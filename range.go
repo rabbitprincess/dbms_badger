@@ -148,7 +148,7 @@ func (t *Tx_view) Range_gt(
 	_limit int,
 	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
 ) (
-	bt_key__next []byte,
+	keyNext []byte,
 	err error,
 ) {
 	return t.Range(_keyPrefix, _keyTarget, nil, _keyNext, true, false, _dir, _keyOnly, _limit, _fn_cb_read)
@@ -163,7 +163,7 @@ func (t *Tx_view) Range_ge(
 	_limit int,
 	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
 ) (
-	bt_key__next []byte,
+	keyNext []byte,
 	err error,
 ) {
 	return t.Range(_keyPrefix, _keyTarget, nil, _keyNext, false, false, _dir, _keyOnly, _limit, _fn_cb_read)
@@ -183,7 +183,7 @@ func (t *Tx_view) Range(
 	_limit int,
 	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
 ) (
-	bt_key__next []byte,
+	keyNext []byte,
 	err error,
 ) {
 	var it *badger.Iterator
@@ -332,7 +332,7 @@ func (t *Tx_view) Range(
 		}
 		n_cnt++
 		if _limit == n_cnt {
-			bt_key__next = bt_key
+			keyNext = bt_key
 			break
 		}
 	}
