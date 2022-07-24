@@ -7,12 +7,12 @@ import (
 //------------------------------------------------------------------------------------//
 // base
 
-type Tx_view struct {
+type TxView struct {
 	db  *Badger
 	txn *badger.Txn
 }
 
-func (t *Tx_view) Init(_db *Badger, _txn *badger.Txn) {
+func (t *TxView) Init(_db *Badger, _txn *badger.Txn) {
 	t.db = _db
 	t.txn = _txn
 }
@@ -20,7 +20,7 @@ func (t *Tx_view) Init(_db *Badger, _txn *badger.Txn) {
 //------------------------------------------------------------------------------------//
 // get set del
 
-func (t *Tx_view) IsExist(_key []byte) (bool, error) {
+func (t *TxView) IsExist(_key []byte) (bool, error) {
 	_, err := t.Get(_key)
 	if err != nil {
 		return false, err
@@ -30,7 +30,7 @@ func (t *Tx_view) IsExist(_key []byte) (bool, error) {
 	return true, nil
 }
 
-func (t *Tx_view) Get(_key []byte) (val []byte, err error) {
+func (t *TxView) Get(_key []byte) (val []byte, err error) {
 	item, err := t.txn.Get(_key)
 	if err != nil {
 		if err == badger.ErrKeyNotFound {
@@ -47,6 +47,6 @@ func (t *Tx_view) Get(_key []byte) (val []byte, err error) {
 	return
 }
 
-func (t *Tx_view) GetStr(_key string) (val []byte, err error) {
+func (t *TxView) GetStr(_key string) (val []byte, err error) {
 	return t.Get([]byte(_key))
 }
