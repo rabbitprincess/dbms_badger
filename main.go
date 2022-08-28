@@ -6,8 +6,6 @@ import (
 
 type Badger struct {
 	badger *badger.DB
-
-	chanGCEnd chan bool
 }
 
 func (t *Badger) Open(_dbpath string) error {
