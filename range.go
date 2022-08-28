@@ -1,341 +1,90 @@
 package db_badger
 
 import (
-	"bytes"
+	"fmt"
 
 	badger "github.com/dgraph-io/badger/v2"
 )
 
-func (t *TxView) Range_all(
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-	return t.Range(nil, nil, nil, nil, false, false, TD_dir_asc, TD_keyOnly_true, _limit, _fn_cb_read)
-}
-
-func (t *TxView) Range_beginWith(
-	_keyPrefix []byte,
-	_keyTarget []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _value []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-	bt_key__target__max := Util__fill_0xff_max(_keyTarget)
-	return t.Range(_keyPrefix, _keyTarget, bt_key__target__max, _keyNext, false, false, _dir, _keyOnly, _limit, _fn_cb_read)
-}
-
-func (t *TxView) Range_between(
-	_keyPrefix []byte,
-	_keyStart []byte,
-	_keyEnd []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _value []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-	return t.Range(_keyPrefix, _keyStart, _keyEnd, _keyNext, false, false, _dir, _keyOnly, _limit, _fn_cb_read)
-}
-
-func (t *TxView) Range_ne(
-	_keyPrefix []byte,
-	_keyStart []byte,
-	_keyEnd []byte,
-	_keyTarget []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _value []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-
-	// 전처리 - limit 처리
-	if _limit >= 0 {
-		var bt_key__prefix_with_key []byte
-		if _keyNext == nil {
-			bt_key__prefix_with_key = append(_keyPrefix, _keyTarget...)
-		} else {
-			bt_key__prefix_with_key = append(_keyPrefix, _keyNext...)
-		}
-		bt_value, err := t.Get(bt_key__prefix_with_key)
-		if err != nil {
-			return nil, err
-		}
-		// get 값이 존재하면 limit 을 하나 늘린다 ( +1 )
-		// 순회 중 get 값을 지나간다는 뜻이기 때문에, 하나를 더 늘림
-		if bt_value != nil {
-			_limit++
-		}
-	}
-
-	fn_cb_read := func(_prefix []byte, _key []byte, _val []byte) error {
-		if bytes.Equal(_key, _keyTarget) == true {
-			return nil
-		}
-		return _fn_cb_read(_prefix, _key, _val)
-	}
-
-	return t.Range(_keyPrefix, _keyStart, _keyEnd, _keyNext, false, false, _dir, _keyOnly, _limit, fn_cb_read)
-
-}
-
-func (t *TxView) Range_eq(
-	_keyPrefix []byte,
-	_keyTarget []byte,
-	_keyOnly TD_keyOnly,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	err error,
-) {
-	keyWithPrefix := append(_keyPrefix, _keyTarget...)
-	val, err := t.Get(keyWithPrefix)
-	if err != nil {
-		return err
-	}
-	return _fn_cb_read(_keyPrefix, _keyTarget, val)
-}
-
-func (t *TxView) Range__lt(
-	_keyPrefix []byte,
-	_keyTarget []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	bt_key__next []byte,
-	err error,
-) {
-	return t.Range(_keyPrefix, nil, _keyTarget, _keyNext, false, true, _dir, _keyOnly, _limit, _fn_cb_read)
-}
-
-func (t *TxView) Range__le(
-	_keyPrefix []byte,
-	_keyTarget []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	bt_key__next []byte,
-	err error,
-) {
-	return t.Range(_keyPrefix, nil, _keyTarget, _keyNext, false, false, _dir, _keyOnly, _limit, _fn_cb_read)
-}
-
-func (t *TxView) Range_gt(
-	_keyPrefix []byte,
-	_keyTarget []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-	return t.Range(_keyPrefix, _keyTarget, nil, _keyNext, true, false, _dir, _keyOnly, _limit, _fn_cb_read)
-}
-
-func (t *TxView) Range_ge(
-	_keyPrefix []byte,
-	_keyTarget []byte,
-	_keyNext []byte,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-	return t.Range(_keyPrefix, _keyTarget, nil, _keyNext, false, false, _dir, _keyOnly, _limit, _fn_cb_read)
+func (t *TxView) NewIterator(_reverse bool, _keyOnly bool, _prefix, _start []byte) *Iterator {
+	iterator := &Iterator{}
+	iterator.Init(t, _reverse, _keyOnly, _prefix, _start)
+	return iterator
 }
 
 //---------------------------------------------------------------------------------------//
+type Iterator struct {
+	badgerIt *badger.Iterator
 
-func (t *TxView) Range(
-	_keyPrefix []byte,
-	keyStart []byte,
-	keyEnd []byte,
-	_keyNext []byte,
-	_isWithoutStart bool,
-	_isWithoutEnd bool,
-	_dir TD_dir,
-	_keyOnly TD_keyOnly,
-	_limit int,
-	_fn_cb_read func(_prefix []byte, _key []byte, _val []byte) error,
-) (
-	keyNext []byte,
-	err error,
-) {
-	var it *badger.Iterator
-	var n_cmp_end int
-	{
-		opt := badger.DefaultIteratorOptions
-
-		// get type
-		{
-			switch _keyOnly {
-			case TD_keyOnly_true:
-				opt.PrefetchValues = false
-			case TD_keyOnly_false:
-				opt.PrefetchValues = true
-			}
-		}
-
-		// dir
-		{
-			switch _dir {
-			case TD_dir_asc:
-				opt.Reverse = false
-				n_cmp_end = 1
-			case TD_dir_desc:
-				opt.Reverse = true
-				n_cmp_end = -1
-
-				keyTmp := keyStart
-				keyStart = keyEnd
-				keyEnd = keyTmp
-
-				isWithoutTmp := _isWithoutStart
-				_isWithoutStart = _isWithoutEnd
-				_isWithoutEnd = isWithoutTmp
-			}
-		}
-
-		it = t.txn.NewIterator(opt)
-		defer it.Close()
-	}
-
-	// 시작 위치 설정
-	{
-		if len(_keyNext) == 0 {
-			if len(keyStart) == 0 {
-				if len(_keyPrefix) == 0 {
-					it.Rewind() // ""
-				} else {
-					// 역방향인경우 = 역정렬 시작위치를 위해 prefix 내부 마지막 값을 찾는다
-					if _dir == TD_dir_desc {
-						var keySeek []byte
-						keySeek = Util__conv_to_next_value(_keyPrefix)
-						it.Seek(keySeek)
-					} else {
-						it.Seek(_keyPrefix) // "[ prefix ]"
-					}
-				}
-			} else {
-				if len(_keyPrefix) == 0 {
-					it.Seek(keyStart) // "[ start ]"
-				} else {
-					_prefixWithStart := append(_keyPrefix, keyStart...)
-					it.Seek(_prefixWithStart) // "[ prefix ][ start ]"
-				}
-			}
-		} else {
-			// next key 는 이전 조회의 마지막 key 이기 때문에
-			// next key 로 seek() 후 valid 인 경우 next() 를 실행 해야지만
-			// 이전 자료의 다음 자료 위치에서 시작하게 된다.
-			_prefixWithNext := append(_keyPrefix, _keyNext...)
-			it.Seek(_prefixWithNext)
-
-			if it.Valid() == false {
-				return nil, nil // next key 가 없는 위치면 자료 없음 반환
-			}
-			it.Next()
-		}
-	}
-
-	// 반복문
-
-	var n_cnt int
-	lenPrefix := len(_keyPrefix)
-	for ; it.Valid(); it.Next() {
-		item := it.Item()
-		keyWithPrefix := item.Key()
-
-		// check prefix
-		if bytes.HasPrefix(keyWithPrefix, _keyPrefix) == false {
-			break
-		}
-
-		key := keyWithPrefix[lenPrefix:] // prefix 제거
-
-		// 스킵 조건 검사
-		{
-			// start
-			{
-				// start key 를 제외하는 옵션
-				if _isWithoutStart == true && len(keyStart) != 0 {
-					_isWithoutStart = false
-
-					cmpStartNow := bytes.Compare(key, keyStart)
-					if cmpStartNow == 0 {
-						continue
-					}
-				}
-			}
-		}
-
-		{
-			// end 조건이 있으면서 현재 키가 end 를 넘어서면 종료
-			if len(keyEnd) != 0 {
-				cmpEndNow := bytes.Compare(key, keyEnd)
-
-				// end key 제외 옵션 처리
-				if _isWithoutEnd == true && cmpEndNow == 0 {
-					return nil, nil
-				}
-
-				// 현재키가 end key 를 넘어서면 종료
-				if cmpEndNow == n_cmp_end {
-					return nil, nil
-				}
-			}
-		}
-
-		var value []byte
-
-		switch _keyOnly {
-		case TD_keyOnly_true:
-			value = nil
-		case TD_keyOnly_false:
-			err = item.Value(func(_value []byte) error {
-				value = _value
-				return nil
-			})
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		err = _fn_cb_read(_keyPrefix, key, value)
-		if err != nil {
-			return nil, err
-		}
-		n_cnt++
-		if _limit == n_cnt {
-			keyNext = key
-			break
-		}
-	}
-
-	return keyNext, nil
+	reverse bool
+	keyOnly bool
+	prefix  []byte
+	start   []byte
 }
+
+func (t *Iterator) Init(_tx *TxView, _reverse, _keyOnly bool, _prefix []byte, _start []byte) {
+	t.reverse = _reverse
+	t.keyOnly = _keyOnly
+	t.prefix = _prefix
+	t.start = _start
+
+	t.badgerIt = _tx.txn.NewIterator(badger.IteratorOptions{
+		Reverse: t.reverse,
+		Prefix:  t.prefix,
+	})
+	t.badgerIt.Seek(t.start)
+}
+
+func (t *Iterator) Config() (_reverse bool, _prefix, _start []byte) {
+	return t.reverse, t.prefix, t.start
+}
+
+func (t *Iterator) Valid() bool {
+	return t.badgerIt.Valid()
+}
+
+func (t *Iterator) Next() {
+	t.badgerIt.Next()
+}
+
+func (t *Iterator) Key() ([]byte, error) {
+	if t.Valid() != true {
+		return nil, fmt.Errorf("invalid key")
+	}
+	return t.badgerIt.Item().Key(), nil
+}
+
+func (t *Iterator) Value() ([]byte, error) {
+	var value []byte
+	err := t.badgerIt.Item().Value(func(val []byte) error {
+		value = val
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
+}
+
+func (t *Iterator) ValueCopy() ([]byte, error) {
+	var val []byte
+	return t.badgerIt.Item().ValueCopy(val)
+}
+
+//-----------------------------------------------------------------//
+// 임시 - range type
+/*
+type TD_range int
+
+const (
+	TD_range_empty TD_range = iota
+	TD_range_beginWith
+	TD_range_between
+	TD_range_lt
+	TD_range_le
+	TD_range_ge
+	TD_range_gt
+	TD_range_eq
+	TD_range_ne
+)
+*/
