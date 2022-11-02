@@ -1,4 +1,4 @@
-module badger
+module github.com/gokch/db_badger 
 
 go 1.17
 
