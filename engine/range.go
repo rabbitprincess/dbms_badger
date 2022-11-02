@@ -9,7 +9,7 @@ import (
 
 // 임시 - !!!테스트 필요!!!
 
-func (t *TxView) RangeBETWEEN(prefix, start, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, err error) {
+func (t *TxView) RangeBETWEEN(prefix, start, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
 	rng := &Range{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
@@ -25,7 +25,7 @@ func (t *TxView) RangeBETWEEN(prefix, start, end []byte, reverse bool, limit int
 	return rng.Range()
 }
 
-func (t *TxView) RangeGT(prefix, start []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, err error) {
+func (t *TxView) RangeGT(prefix, start []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
 	rng := &Range{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
@@ -40,7 +40,7 @@ func (t *TxView) RangeGT(prefix, start []byte, reverse bool, limit int, read fun
 	return rng.Range()
 }
 
-func (t *TxView) RangeGE(prefix, start []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, err error) {
+func (t *TxView) RangeGE(prefix, start []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
 	rng := &Range{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
@@ -55,7 +55,7 @@ func (t *TxView) RangeGE(prefix, start []byte, reverse bool, limit int, read fun
 	return rng.Range()
 }
 
-func (t *TxView) RangeLT(prefix, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, err error) {
+func (t *TxView) RangeLT(prefix, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
 	rng := &Range{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
@@ -70,7 +70,7 @@ func (t *TxView) RangeLT(prefix, end []byte, reverse bool, limit int, read func(
 	return rng.Range()
 }
 
-func (t *TxView) RangeLE(prefix, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, err error) {
+func (t *TxView) RangeLE(prefix, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
 	rng := &Range{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
@@ -88,8 +88,8 @@ func (t *TxView) RangeLE(prefix, end []byte, reverse bool, limit int, read func(
 // 임시 - todo
 // if reverse == false -> lt + gt
 // if reverse == true -> gt + lt
-func (t *TxView) RangeNE(prefix, target []byte, reverse bool, limit int, read func(key, value []byte)) (nextStart []byte, err error) {
-	return nil, nil
+func (t *TxView) RangeNE(prefix, target []byte, reverse bool, limit int, read func(key, value []byte)) (nextStart []byte, nextLimit int, err error) {
+	return nil, 0, nil
 }
 
 //------------------------------------------------------------------------------//
@@ -112,7 +112,7 @@ type Range struct {
 	read func(key []byte, value []byte) (err error)
 }
 
-func (t *Range) Range() (next []byte, err error) {
+func (t *Range) Range() (next []byte, limit int, err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
 
@@ -170,14 +170,14 @@ func (t *Range) Range() (next []byte, err error) {
 		if t.keyOnly != true {
 			value, err = iter.Item().ValueCopy(nil)
 			if err != nil {
-				return nil, err
+				return nil, 0, err
 			}
 		}
 
 		// read key, value
 		err = t.read(key, value)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		// decrease limit
@@ -189,7 +189,7 @@ func (t *Range) Range() (next []byte, err error) {
 
 	// return next key
 	if iter.Next(); iter.Valid() == true {
-		return iter.Item().Key(), nil
+		return iter.Item().Key(), t.limit, nil
 	}
-	return nil, nil
+	return nil, t.limit, nil
 }
