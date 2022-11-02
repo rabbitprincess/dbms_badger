@@ -78,7 +78,7 @@ func (t *Table) GetPrimaryIndex() *Index {
 
 func (t *Table) AddIndex(idxName string, idxType IdxType) error {
 	if t.Indexes == nil {
-		t.Indexes = make([]*Index, 1, 10)
+		t.Indexes = make([]*Index, 0, 10)
 		t.indexName = make(map[string]*Index)
 	}
 
@@ -87,7 +87,7 @@ func (t *Table) AddIndex(idxName string, idxType IdxType) error {
 	}
 
 	idx := &Index{
-		Seq:  len(t.Indexes),
+		Seq:  len(t.Indexes) + 1,
 		Name: idxName,
 	}
 

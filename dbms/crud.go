@@ -8,6 +8,7 @@ import (
 	"github.com/gokch/db_badger/schema"
 )
 
+// 임시 - todo - key 제작 시 구분자 기준 대신 길이 처리 필요 ( 동적 길이 또는 고정 길이 )
 func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record) error {
 	// 스키마 가져오기
 	tbl := t.schema.GetTable(tblName)
@@ -56,5 +57,17 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 			return err
 		}
 	}
+	return nil
+}
+
+// todo
+func (t *DBMS) Get(txn *engine.TxView, tblName string, idxName string, record schema.Record) error {
+
+	return nil
+}
+
+// todo
+func (t *DBMS) Range(txn *engine.TxView, tblName string, idxName string, record schema.Record) error {
+
 	return nil
 }
