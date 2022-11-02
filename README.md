@@ -1,4 +1,4 @@
-# db_badger
+# dbms_badger
 database management system implement badgerdb ( github.com/dgraph-io/badger/v3 )
 
 

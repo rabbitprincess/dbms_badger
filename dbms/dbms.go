@@ -1,8 +1,8 @@
 package dbms
 
 import (
-	"github.com/gokch/db_badger/engine"
-	"github.com/gokch/db_badger/schema"
+	"github.com/gokch/dbms_badger/engine"
+	"github.com/gokch/dbms_badger/schema"
 )
 
 type DBMS struct {

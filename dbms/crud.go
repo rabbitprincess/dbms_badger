@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/gokch/db_badger/engine"
-	"github.com/gokch/db_badger/schema"
+	"github.com/gokch/dbms_badger/engine"
+	"github.com/gokch/dbms_badger/schema"
 )
 
 // 임시 - todo - key 제작 시 구분자 기준 대신 길이 처리 필요 ( 동적 길이 또는 고정 길이 )
