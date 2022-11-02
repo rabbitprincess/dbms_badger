@@ -36,19 +36,17 @@ func (t *Badger) SequenceGet(key []byte, bandwidth uint64) (*badger.Sequence, er
 }
 
 func (t *Badger) TxView(fnCb func(view *TxView) error) error {
-	fn := func(_tx *badger.Txn) error {
+	return t.badger.View(func(_tx *badger.Txn) error {
 		txView := &TxView{}
 		txView.Init(t, _tx)
 		return fnCb(txView)
-	}
-	return t.badger.View(fn)
+	})
 }
 
 func (t *Badger) TxUpdate(fnCb func(update *TxUpdate) error) error {
-	fn := func(_tx *badger.Txn) error {
+	return t.badger.Update(func(_tx *badger.Txn) error {
 		txUpdate := &TxUpdate{}
 		txUpdate.Init(t, _tx)
 		return fnCb(txUpdate)
-	}
-	return t.badger.Update(fn)
+	})
 }
