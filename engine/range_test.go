@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/binary"
+	"fmt"
 	"testing"
 
 	"github.com/dgraph-io/badger/v3"
@@ -32,12 +33,14 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 		binary.BigEndian.PutUint64(start[:], 100)
 		binary.BigEndian.PutUint64(end[:], 200)
 		var count int = 100
-		view.RangeBETWEEN(
+		scroll := view.RangeBETWEEN(
 			nil,
 			start[:],
 			end[:],
 			false,
+			false,
 			func(key, value []byte) error {
+
 				if string(key) != string(value) {
 					t.Fatal("key != value")
 				}
@@ -46,10 +49,19 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 				if v != uint64(count) {
 					t.Fatalf("expected %d, got %d", count, v)
 				}
+
 				count++
+				fmt.Println(key, value)
 				return nil
 			},
 		)
+
+		var limit int = 10
+		err = scroll.Next(&limit)
+		if err != nil {
+			return err
+		}
+		scroll.iter.Close()
 
 		return nil
 	})
