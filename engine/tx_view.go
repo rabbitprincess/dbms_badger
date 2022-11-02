@@ -1,20 +1,20 @@
-package db_badger
+package engine
 
 import (
 	"fmt"
 
-	badger "github.com/dgraph-io/badger/v3"
+	"github.com/dgraph-io/badger/v3"
 )
 
 //------------------------------------------------------------------------------------//
 // base
 
 type TxView struct {
-	db  *Badger
+	db  *Engine
 	txn *badger.Txn
 }
 
-func (t *TxView) Init(db *Badger, txn *badger.Txn) {
+func (t *TxView) Init(db *Engine, txn *badger.Txn) {
 	t.db = db
 	t.txn = txn
 }
