@@ -9,93 +9,82 @@ import (
 
 // 임시 - !!!테스트 필요!!!
 
-func (t *TxView) RangeBETWEEN(prefix, start, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
-	rng := &Range{
+func (t *TxView) RangeBETWEEN(prefix, start, end []byte, reverse bool, read func(key, value []byte) error) *Scroll {
+	return &Scroll{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
 		prefix:       prefix,
 		start:        start,
 		end:          end,
 		reverse:      reverse,
-		limit:        limit,
 		read:         read,
 		includeStart: true,
 		includeEnd:   true,
 	}
-	return rng.Range()
 }
 
-func (t *TxView) RangeGT(prefix, start []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
-	rng := &Range{
+func (t *TxView) RangeGT(prefix, start []byte, reverse bool, read func(key, value []byte) error) *Scroll {
+	return &Scroll{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
 		prefix:       prefix,
 		start:        start,
 		reverse:      reverse,
-		limit:        limit,
 		read:         read,
 		includeStart: false,
 		includeEnd:   true,
 	}
-	return rng.Range()
 }
 
-func (t *TxView) RangeGE(prefix, start []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
-	rng := &Range{
+func (t *TxView) RangeGE(prefix, start []byte, reverse bool, read func(key, value []byte) error) *Scroll {
+	return &Scroll{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
 		prefix:       prefix,
 		start:        start,
 		reverse:      reverse,
-		limit:        limit,
 		read:         read,
 		includeStart: true,
 		includeEnd:   true,
 	}
-	return rng.Range()
 }
 
-func (t *TxView) RangeLT(prefix, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
-	rng := &Range{
+func (t *TxView) RangeLT(prefix, end []byte, reverse bool, read func(key, value []byte) error) *Scroll {
+	return &Scroll{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
 		prefix:       prefix,
 		end:          end,
 		reverse:      reverse,
-		limit:        limit,
 		read:         read,
 		includeStart: true,
 		includeEnd:   false,
 	}
-	return rng.Range()
 }
 
-func (t *TxView) RangeLE(prefix, end []byte, reverse bool, limit int, read func(key, value []byte) error) (nextStart []byte, nextLimit int, err error) {
-	rng := &Range{
+func (t *TxView) RangeLE(prefix, end []byte, reverse bool, read func(key, value []byte) error) *Scroll {
+	return &Scroll{
 		mtx:          &sync.Mutex{},
 		txn:          t.txn,
 		prefix:       prefix,
 		end:          end,
 		reverse:      reverse,
-		limit:        limit,
 		read:         read,
 		includeStart: true,
 		includeEnd:   true,
 	}
-	return rng.Range()
 }
 
 // 임시 - todo
-// if reverse == false -> lt + gt
-// if reverse == true -> gt + lt
-func (t *TxView) RangeNE(prefix, target []byte, reverse bool, limit int, read func(key, value []byte)) (nextStart []byte, nextLimit int, err error) {
-	return nil, 0, nil
+// continue if target == key
+func (t *TxView) RangeNE(prefix, target []byte, reverse bool, read func(key, value []byte)) *Scroll {
+	return nil
 }
 
 //------------------------------------------------------------------------------//
 // range
 
-type Range struct {
+type Scroll struct {
 	mtx *sync.Mutex
 
 	txn          *badger.Txn
@@ -107,12 +96,12 @@ type Range struct {
 
 	reverse bool
 	keyOnly bool
-	limit   int
 
 	read func(key []byte, value []byte) (err error)
 }
 
-func (t *Range) Range() (next []byte, limit int, err error) {
+// 임시 - iter 재사용 필요
+func (t *Scroll) Next(next *[]byte, limit *int) (err error) {
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
 
@@ -136,9 +125,16 @@ func (t *Range) Range() (next []byte, limit int, err error) {
 	// set start, end
 	var iterStart, iterEnd []byte
 	{
-		iterStart = make([]byte, 0, len(t.prefix)+len(t.start))
-		iterStart = append(iterStart, t.prefix...)
-		iterStart = append(iterStart, t.start...)
+		if next != nil {
+			iterStart = make([]byte, 0, len(t.prefix)+len(*next))
+			iterStart = append(iterStart, *next...)
+			iterStart = append(iterStart, t.start...)
+			t.includeStart = true
+		} else {
+			iterStart = make([]byte, 0, len(t.prefix)+len(t.start))
+			iterStart = append(iterStart, t.prefix...)
+			iterStart = append(iterStart, t.start...)
+		}
 
 		iterEnd = make([]byte, 0, len(t.prefix)+len(t.end))
 		iterEnd = append(iterEnd, t.prefix...)
@@ -170,26 +166,27 @@ func (t *Range) Range() (next []byte, limit int, err error) {
 		if t.keyOnly != true {
 			value, err = iter.Item().ValueCopy(nil)
 			if err != nil {
-				return nil, 0, err
+				return err
 			}
 		}
 
 		// read key, value
 		err = t.read(key, value)
 		if err != nil {
-			return nil, 0, err
+			return err
 		}
 
 		// decrease limit
-		t.limit--
-		if t.limit == 0 {
+		*limit--
+		if *limit == 0 {
 			break
 		}
 	}
 
 	// return next key
+
 	if iter.Next(); iter.Valid() == true {
-		return iter.Item().Key(), t.limit, nil
+		*next = iter.Item().Key()
 	}
-	return nil, t.limit, nil
+	return nil
 }
