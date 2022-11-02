@@ -1,5 +1,5 @@
 # db_badger
-db library implement badgerdb ( github.com/dgraph-io/badger/v3 )
+database management system implement badgerdb ( github.com/dgraph-io/badger/v3 )
 
 
 support range type
