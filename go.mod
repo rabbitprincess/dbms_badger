@@ -2,7 +2,10 @@ module github.com/gokch/dbms_badger
 
 go 1.17
 
-require github.com/dgraph-io/badger/v3 v3.2103.3
+require (
+	github.com/dgraph-io/badger/v3 v3.2103.3
+	github.com/tinylib/msgp v1.1.6
+)
 
 require (
 	github.com/cespare/xxhash v1.1.0 // indirect
@@ -16,6 +19,7 @@ require (
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/klauspost/compress v1.12.3 // indirect
+	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	go.opencensus.io v0.22.5 // indirect
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
