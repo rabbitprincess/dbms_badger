@@ -99,6 +99,7 @@ func (t *Scroll) init(txn *badger.Txn, prefix, start, end []byte, includeStart, 
 	t.includeEnd = includeEnd
 	t.reverse = reverse
 	t.keyOnly = keyOnly
+	t.read = read
 
 	// 시작값이 prefix 로만 지정되었는데, reverse == true 일 경우 처리 필요
 	if t.reverse == true && len(t.iterStart) == len(prefix) {
