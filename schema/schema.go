@@ -1,13 +1,18 @@
 package schema
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 const (
 	TBL_NAME_INFORMATION_SCHEMA = "information_schema"
 )
 
+// 임시 - todo - 동시 접근을 막기 위한 mutex lock 필요
 type Schema struct {
-	Tables []*Table
+	Tables  []*Table
+	tblName map[string]*Table
 }
 
 func (s *Schema) Load(bt []byte) error {
@@ -20,44 +25,75 @@ func (s *Schema) Save() (bt []byte, err error) {
 	return json.Marshal(s)
 }
 
-func (s *Schema) AddTable(tblName string) {
+func (s *Schema) AddTable(tblName string) error {
 	if s.Tables == nil {
 		s.Tables = make([]*Table, 0, 10)
+		s.tblName = make(map[string]*Table)
+	}
+	if _, ok := s.tblName[tblName]; ok {
+		return fmt.Errorf("table already exists: %s", tblName)
 	}
 
-	s.Tables = append(s.Tables, &Table{
+	tbl := &Table{
 		Seq:  len(s.Tables),
 		Name: tblName,
-	})
+	}
+	s.Tables = append(s.Tables, tbl)
+	s.tblName[tblName] = tbl
+	return nil
 }
 
 func (s *Schema) GetTable(tblName string) *Table {
 	if s.Tables == nil {
 		return nil
 	}
-	for _, tbl := range s.Tables {
-		if tbl.Name == tblName {
-			return tbl
-		}
-	}
-	return nil
+	return s.tblName[tblName]
 }
 
 type Table struct {
-	Seq     int
-	Name    string
-	Indexes []*Index
-	Fields  []*Field
+	Seq       int
+	Name      string
+	Primary   *Index
+	Indexes   []*Index
+	indexName map[string]*Index
+	Fields    []*Field
 }
 
-func (t *Table) AddIndex() {
-	if t.Indexes == nil {
-		t.Indexes = make([]*Index, 0, 10)
+func (t *Table) AddPrimaryIndex(idxName string) error {
+	if t.Primary != nil {
+		return fmt.Errorf("primary index already exists: %s", idxName)
 	}
 
-	t.Indexes = append(t.Indexes, &Index{
-		Seq: len(t.Indexes),
-	})
+	idx := &Index{
+		Seq:  0,
+		Name: idxName,
+	}
+	t.Primary = idx
+	return nil
+}
+
+func (t *Table) GetPrimaryIndex() *Index {
+	return t.Primary
+}
+
+func (t *Table) AddIndex(idxName string, idxType IdxType) error {
+	if t.Indexes == nil {
+		t.Indexes = make([]*Index, 1, 10)
+		t.indexName = make(map[string]*Index)
+	}
+
+	if _, ok := t.indexName[idxName]; ok {
+		return fmt.Errorf("index already exists: %s", idxName)
+	}
+
+	idx := &Index{
+		Seq:  len(t.Indexes),
+		Name: idxName,
+	}
+
+	t.Indexes = append(t.Indexes, idx)
+	t.indexName[idxName] = idx
+	return nil
 }
 
 func (t *Table) GetIndex(idxName string) *Index {
