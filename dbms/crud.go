@@ -25,11 +25,11 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		key := make([]byte, 0, 1024)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Seq), 10)+":")...)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Primary.Seq), 10))...)
-
 		val, err := record.Encode()
 		if err != nil {
 			return err
 		}
+
 		arrKey = append(arrKey, key)
 		arrVal = append(arrVal, val)
 	}
@@ -39,7 +39,6 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		var key []byte = make([]byte, 0, 1024)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Seq), 10)+":")...)
 		key = append(key, []byte(strconv.FormatInt(int64(idx.Seq), 10)+":")...)
-
 		fields, err := record.Encode(idx.Fields...)
 		if err != nil {
 			return err
@@ -47,7 +46,7 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		key = append(key, fields...)
 
 		arrKey = append(arrKey, key)
-		arrVal = append(arrVal, arrKey[0])
+		arrVal = append(arrVal, arrKey[0]) // pk key
 	}
 
 	// set kv
