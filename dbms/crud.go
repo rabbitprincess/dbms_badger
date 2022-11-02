@@ -61,9 +61,12 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 }
 
 // todo
-func (t *DBMS) Get(txn *engine.TxView, tblName string, idxName string, record schema.Record) error {
+func (t *DBMS) Get(txn *engine.TxView, tblName string, idxName string, record schema.Record) (value []byte, err error) {
+	// record 를 이용해 가져와서 key 제작
+	var key []byte
 
-	return nil
+	// key 로 value get
+	return txn.Get(key)
 }
 
 // todo

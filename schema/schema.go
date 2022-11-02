@@ -124,5 +124,5 @@ type Record interface {
 type Field struct {
 	Seq   int
 	Name  string
-	value interface{}
+	Value interface{}
 }
