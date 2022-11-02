@@ -1,13 +1,14 @@
 package schema
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
 const (
 	TBL_NAME_INFORMATION_SCHEMA = "information_schema"
 )
+
+//go:generate msgp
 
 // 임시 - todo - 동시 접근을 막기 위한 mutex lock 필요
 type Schema struct {
@@ -16,13 +17,14 @@ type Schema struct {
 }
 
 func (s *Schema) Load(bt []byte) error {
-	// 임시 - 현재는 json decoding 으로 복구
-	return json.Unmarshal(bt, s)
+	// 임시 - 현재는 msgpack decoding 으로 복구
+	_, err := s.UnmarshalMsg(bt)
+	return err
 }
 
 func (s *Schema) Save() (bt []byte, err error) {
-	// 임시 - 현재는 json encoding 으로 저장
-	return json.Marshal(s)
+	// 임시 - 현재는 msgpack encoding 으로 저장
+	return s.MarshalMsg(nil)
 }
 
 func (s *Schema) AddTable(tblName string) error {

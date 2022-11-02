@@ -1,5 +1,6 @@
 package schema
 
+//go:generate msgp
 type IdxType string
 
 const (
