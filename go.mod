@@ -1,15 +1,13 @@
-module github.com/gokch/db_badger 
+module github.com/gokch/db_badger
 
 go 1.17
 
-require github.com/dgraph-io/badger/v2 v2.2007.4
+require github.com/dgraph-io/badger/v3 v3.2103.3
 
 require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
-	github.com/dgraph-io/badger/v3 v3.2103.3 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
-	github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
