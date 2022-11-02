@@ -11,8 +11,8 @@ const (
 
 // 임시 - todo - 동시 접근을 막기 위한 mutex lock 필요
 type Schema struct {
-	Tables  []*Table
-	tblName map[string]*Table
+	Tables   []*Table
+	tblNames map[string]*Table
 }
 
 func (s *Schema) Load(bt []byte) error {
@@ -28,9 +28,9 @@ func (s *Schema) Save() (bt []byte, err error) {
 func (s *Schema) AddTable(tblName string) error {
 	if s.Tables == nil {
 		s.Tables = make([]*Table, 0, 10)
-		s.tblName = make(map[string]*Table)
+		s.tblNames = make(map[string]*Table)
 	}
-	if _, ok := s.tblName[tblName]; ok {
+	if _, ok := s.tblNames[tblName]; ok {
 		return fmt.Errorf("table already exists: %s", tblName)
 	}
 
@@ -39,7 +39,7 @@ func (s *Schema) AddTable(tblName string) error {
 		Name: tblName,
 	}
 	s.Tables = append(s.Tables, tbl)
-	s.tblName[tblName] = tbl
+	s.tblNames[tblName] = tbl
 	return nil
 }
 
@@ -47,16 +47,15 @@ func (s *Schema) GetTable(tblName string) *Table {
 	if s.Tables == nil {
 		return nil
 	}
-	return s.tblName[tblName]
+	return s.tblNames[tblName]
 }
 
 type Table struct {
-	Seq       int
-	Name      string
-	Primary   *Index
-	Indexes   []*Index
-	indexName map[string]*Index
-	Fields    []*Field
+	Seq      int
+	Name     string
+	Primary  *Index
+	Indexes  []*Index
+	idxNames map[string]*Index
 }
 
 func (t *Table) AddPrimaryIndex(idxName string) error {
@@ -79,10 +78,10 @@ func (t *Table) GetPrimaryIndex() *Index {
 func (t *Table) AddIndex(idxName string, idxType IdxType) error {
 	if t.Indexes == nil {
 		t.Indexes = make([]*Index, 0, 10)
-		t.indexName = make(map[string]*Index)
+		t.idxNames = make(map[string]*Index)
 	}
 
-	if _, ok := t.indexName[idxName]; ok {
+	if _, ok := t.idxNames[idxName]; ok {
 		return fmt.Errorf("index already exists: %s", idxName)
 	}
 
@@ -92,7 +91,7 @@ func (t *Table) AddIndex(idxName string, idxType IdxType) error {
 	}
 
 	t.Indexes = append(t.Indexes, idx)
-	t.indexName[idxName] = idx
+	t.idxNames[idxName] = idx
 	return nil
 }
 
