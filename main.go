@@ -1,16 +1,17 @@
 package db_badger
 
 import (
-	badger "github.com/dgraph-io/badger/v2"
+	"github.com/dgraph-io/badger/v3"
 )
 
 type Badger struct {
 	badger *badger.DB
+	schema *Schema
 }
 
-func (t *Badger) Open(_dbpath string) error {
+func (t *Badger) Open(path string) error {
 	var err error
-	t.badger, err = badger.Open(badger.DefaultOptions(_dbpath))
+	t.badger, err = badger.Open(badger.DefaultOptions(path))
 	if err != nil {
 		return err
 	}
@@ -18,37 +19,36 @@ func (t *Badger) Open(_dbpath string) error {
 	return nil
 }
 
-func (t *Badger) RunGC(_ratio float64) {
-	t.badger.RunValueLogGC(_ratio)
+func (t *Badger) RunGC(ratio float64) {
+	t.badger.RunValueLogGC(ratio)
 }
 
 func (t *Badger) Info() []badger.TableInfo {
-	TableInfo := t.badger.Tables(true)
-	return TableInfo
+	return t.badger.Tables()
 }
 
 func (t *Badger) DropAll() error {
 	return t.badger.DropAll()
 }
 
-func (t *Badger) SequenceGet(_key []byte, _bandwidth uint64) (*badger.Sequence, error) {
-	return t.badger.GetSequence(_key, _bandwidth)
+func (t *Badger) SequenceGet(key []byte, bandwidth uint64) (*badger.Sequence, error) {
+	return t.badger.GetSequence(key, bandwidth)
 }
 
-func (t *Badger) TX_view(_fn_cb func(_view *TxView) error) error {
+func (t *Badger) TxView(fnCb func(view *TxView) error) error {
 	fn := func(_tx *badger.Txn) error {
-		pt_tx__view := &TxView{}
-		pt_tx__view.Init(t, _tx)
-		return _fn_cb(pt_tx__view)
+		txView := &TxView{}
+		txView.Init(t, _tx)
+		return fnCb(txView)
 	}
 	return t.badger.View(fn)
 }
 
-func (t *Badger) TX_update(_fn_cb func(_update *TxUpdate) error) error {
+func (t *Badger) TxUpdate(fnCb func(update *TxUpdate) error) error {
 	fn := func(_tx *badger.Txn) error {
-		pt_tx__update := &TxUpdate{}
-		pt_tx__update.Init(t, _tx)
-		return _fn_cb(pt_tx__update)
+		txUpdate := &TxUpdate{}
+		txUpdate.Init(t, _tx)
+		return fnCb(txUpdate)
 	}
 	return t.badger.Update(fn)
 }

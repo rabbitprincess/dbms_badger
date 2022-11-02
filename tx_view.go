@@ -3,7 +3,7 @@ package db_badger
 import (
 	"fmt"
 
-	badger "github.com/dgraph-io/badger/v2"
+	badger "github.com/dgraph-io/badger/v3"
 )
 
 //------------------------------------------------------------------------------------//

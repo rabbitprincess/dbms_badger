@@ -34,7 +34,7 @@ func (t *TxUpdate) Delete(_key []byte) error {
 	return t.txn.Delete(_key)
 }
 
-func (t *TxUpdate) Delete__if_exist(_key []byte) error {
+func (t *TxUpdate) DeleteIfExist(_key []byte) error {
 	_, err := t.Get(_key)
 	if err != nil {
 		return err
