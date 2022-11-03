@@ -52,15 +52,14 @@ func (t *TxView) RangeNE(prefix, target []byte, reverse, keyOnly bool, read func
 type Scroll struct {
 	mtx *sync.Mutex
 
-	iterStart    []byte
-	iterEnd      []byte
 	includeStart bool
 	includeEnd   bool
+	reverse      bool
+	keyOnly      bool
+	read         func(key []byte, value []byte) (err error)
 
-	reverse bool
-	keyOnly bool
-
-	read func(key []byte, value []byte) (err error)
+	iterStart []byte
+	iterEnd   []byte
 
 	iter   *badger.Iterator
 	finish bool
@@ -70,6 +69,12 @@ func (t *Scroll) init(txn *badger.Txn, prefix, start, end []byte, includeStart, 
 	t.mtx = &sync.Mutex{}
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
+
+	t.includeStart = includeStart
+	t.includeEnd = includeEnd
+	t.reverse = reverse
+	t.keyOnly = keyOnly
+	t.read = read
 
 	// init iterator
 	{
@@ -97,12 +102,6 @@ func (t *Scroll) init(txn *badger.Txn, prefix, start, end []byte, includeStart, 
 		t.iterEnd = append(t.iterEnd, end...)
 	}
 
-	t.includeStart = includeStart
-	t.includeEnd = includeEnd
-	t.reverse = reverse
-	t.keyOnly = keyOnly
-	t.read = read
-
 	// 시작값이 prefix 로만 지정되었는데, reverse == true 일 경우 처리 필요
 	if t.reverse == true && len(t.iterStart) == len(prefix) {
 		t.iterStart = append(t.iterStart, 0xFF)
@@ -110,9 +109,6 @@ func (t *Scroll) init(txn *badger.Txn, prefix, start, end []byte, includeStart, 
 
 	// seek iterator
 	t.iter.Seek(t.iterStart)
-	if t.includeStart != true {
-		t.iter.Next()
-	}
 }
 
 func (t *Scroll) Next(limit *int) (err error) {
@@ -122,6 +118,12 @@ func (t *Scroll) Next(limit *int) (err error) {
 
 	t.mtx.Lock()
 	defer t.mtx.Unlock()
+
+	if t.includeStart != true {
+		t.iter.Next()
+	} else {
+		t.includeStart = false
+	}
 
 	// iterate
 	for ; t.iter.Valid(); t.iter.Next() {
@@ -153,11 +155,14 @@ func (t *Scroll) Next(limit *int) (err error) {
 		// decrease limit
 		*limit--
 		if *limit == 0 {
-			return nil
+			return nil // return ( without close )
 		}
 	}
+	t.Close()
+	return nil
+}
+
+func (t *Scroll) Close() {
 	t.finish = true
 	t.iter.Close()
-
-	return nil
 }
