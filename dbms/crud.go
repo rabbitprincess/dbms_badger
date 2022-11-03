@@ -21,6 +21,7 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 	arrKey := make([][]byte, 0, len(tbl.Indexes)+1)
 	arrVal := make([][]byte, 0, len(tbl.Indexes)+1)
 
+	// 임시 - primary key 와 index make 를 같은 코드로 묶어야 할듯.
 	// set record to primary key
 	{
 		key := make([]byte, 0, 1024)
