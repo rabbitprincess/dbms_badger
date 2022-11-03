@@ -51,7 +51,7 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 		if err := scroll.Next(&limit); err != nil {
 			return err
 		}
-		fmt.Println("left limit :", limit)
+		fmt.Printf("count : %v | left limit : %v\n", count, limit)
 		return nil
 	}); err != nil {
 		t.Fatal(err)
