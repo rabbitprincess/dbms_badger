@@ -8,18 +8,16 @@ import (
 )
 
 func TestTxView_RangeBETWEEN(t *testing.T) {
-	opt := badger.DefaultOptions("").WithInMemory(true)
-	db, err := badger.Open(opt)
-	if err != nil {
+	opt := badger.DefaultOptions("").WithInMemory(true).WithLogger(nil)
+	e := &Engine{}
+	if err := e.OpenAdv(opt); err != nil {
 		t.Fatal(err)
-		return
 	}
-	defer db.Close()
+	if err := e.DropAll(); err != nil {
+		t.Fatal(err)
+	}
 
-	e := &Engine{db}
-	e.DropAll()
-
-	err = e.TxUpdate(func(update *TxUpdate) error {
+	if err := e.TxUpdate(func(update *TxUpdate) error {
 		update.Set([]byte{0, 0}, []byte{0, 0})
 		update.Set([]byte{0, 1}, []byte{0, 1})
 		update.Set([]byte{0, 2}, []byte{0, 2})
@@ -27,20 +25,16 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 		update.Set([]byte{0, 4}, []byte{0, 4})
 
 		return nil
-	})
-	if err != nil {
+	}); err != nil {
 		t.Fatal(err)
 	}
 
-	err = e.TxView(func(view *TxView) error {
-		prefix := []byte{0}
-		start := []byte{0}
-		end := []byte{3}
+	if err := e.TxView(func(view *TxView) error {
 		var count int = 100
 		scroll := view.RangeBETWEEN(
-			prefix,
-			start[:],
-			end[:],
+			[]byte{0},
+			[]byte{1},
+			[]byte{3},
 			false,
 			false,
 			func(key, value []byte) error {
@@ -54,15 +48,12 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 		)
 
 		var limit int = 10
-		err = scroll.Next(&limit)
-		if err != nil {
+		if err := scroll.Next(&limit); err != nil {
 			return err
 		}
-
+		fmt.Println("left limit :", limit)
 		return nil
-	})
-
-	if err != nil {
+	}); err != nil {
 		t.Fatal(err)
 	}
 }

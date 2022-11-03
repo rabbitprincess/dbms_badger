@@ -9,8 +9,12 @@ type Engine struct {
 }
 
 func (t *Engine) Open(path string) error {
+	return t.OpenAdv(badger.DefaultOptions(path))
+}
+
+func (t *Engine) OpenAdv(opt badger.Options) error {
 	var err error
-	t.badger, err = badger.Open(badger.DefaultOptions(path))
+	t.badger, err = badger.Open(opt)
 	if err != nil {
 		return err
 	}

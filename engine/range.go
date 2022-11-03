@@ -68,6 +68,8 @@ type Scroll struct {
 
 func (t *Scroll) init(txn *badger.Txn, prefix, start, end []byte, includeStart, includeEnd, reverse, keyOnly bool, read func(key, value []byte) error) {
 	t.mtx = &sync.Mutex{}
+	t.mtx.Lock()
+	defer t.mtx.Unlock()
 
 	// init iterator
 	{
@@ -127,7 +129,7 @@ func (t *Scroll) Next(limit *int) (err error) {
 		var key []byte = t.iter.Item().Key()
 
 		// break end
-		if (t.includeEnd != true && bytes.Equal(t.iterEnd, key) == true) ||
+		if (t.includeEnd != true && bytes.Compare(t.iterEnd, key) == 0) ||
 			(t.reverse == false && bytes.Compare(t.iterEnd, key) < 0) ||
 			(t.reverse == true && bytes.Compare(t.iterEnd, key) > 0) { // end 조건
 			break
