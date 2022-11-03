@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"encoding/binary"
 	"fmt"
 	"testing"
 
@@ -21,11 +20,12 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 	e.DropAll()
 
 	err = e.TxUpdate(func(update *TxUpdate) error {
-		var b [8]byte
-		for i := 0; i < 1000; i++ {
-			binary.BigEndian.PutUint64(b[:], uint64(i))
-			update.Set(b[:], b[:])
-		}
+		update.Set([]byte{0, 0}, []byte{0, 0})
+		update.Set([]byte{0, 1}, []byte{0, 1})
+		update.Set([]byte{0, 2}, []byte{0, 2})
+		update.Set([]byte{0, 3}, []byte{0, 3})
+		update.Set([]byte{0, 4}, []byte{0, 4})
+
 		return nil
 	})
 	if err != nil {
@@ -33,12 +33,12 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 	}
 
 	err = e.TxView(func(view *TxView) error {
-		var start, end [8]byte
-		binary.BigEndian.PutUint64(start[:], 100)
-		binary.BigEndian.PutUint64(end[:], 200)
+		prefix := []byte{0}
+		start := []byte{0}
+		end := []byte{3}
 		var count int = 100
 		scroll := view.RangeBETWEEN(
-			nil,
+			prefix,
 			start[:],
 			end[:],
 			false,
@@ -47,12 +47,6 @@ func TestTxView_RangeBETWEEN(t *testing.T) {
 				if string(key) != string(value) {
 					return fmt.Errorf("key != value")
 				}
-				/*
-					v := binary.BigEndian.Uint64(value)
-					if v != uint64(count) {
-						return fmt.Errorf("expected %d, got %d", count, v)
-					}
-				*/
 				count++
 				fmt.Printf("key : %v, val : %v\n", key, value)
 				return nil

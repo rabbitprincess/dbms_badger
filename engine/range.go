@@ -128,8 +128,8 @@ func (t *Scroll) Next(limit *int) (err error) {
 
 		// break end
 		if (t.includeEnd != true && bytes.Equal(t.iterEnd, key) == true) ||
-			(t.reverse == true && bytes.Compare(t.iterEnd, key) < 0) ||
-			(t.reverse == false && bytes.Compare(t.iterEnd, key) > 0) { // end 조건
+			(t.reverse == false && bytes.Compare(t.iterEnd, key) < 0) ||
+			(t.reverse == true && bytes.Compare(t.iterEnd, key) > 0) { // end 조건
 			break
 		}
 
