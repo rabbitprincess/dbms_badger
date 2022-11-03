@@ -1,6 +1,6 @@
 module github.com/gokch/dbms_badger
 
-go 1.17
+go 1.19
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.3
