@@ -9,8 +9,8 @@ value = <bitset>
 
 # Unique Index Format
 
-key = _t/<table_id>/<index_id>/<index_key>
-value = <primary_key>
+key = _t/<table_id>/<index_id>/<index_key>/<primary_key>
+value = <null>
 
 # Range Index Format
 
