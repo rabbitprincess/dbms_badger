@@ -40,8 +40,7 @@ func (t *TxView) RangeLE(prefix, end []byte, reverse, keyOnly bool, read func(ke
 	return scroll
 }
 
-// 임시 - todo
-// continue if target == key
+// TODO: 임시 continue if target == key
 func (t *TxView) RangeNE(prefix, target []byte, reverse, keyOnly bool, read func(key, value []byte)) *Scroll {
 	return nil
 }

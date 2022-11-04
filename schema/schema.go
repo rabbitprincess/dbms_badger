@@ -10,7 +10,7 @@ const (
 
 //go:generate msgp
 
-// 임시 - todo - 동시 접근을 막기 위한 mutex lock 필요
+// TODO: 임시 - 동시 접근을 막기 위한 mutex lock 필요
 type Schema struct {
 	Tables   []*Table
 	tblNames map[string]*Table
