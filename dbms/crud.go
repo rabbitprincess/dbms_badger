@@ -11,6 +11,8 @@ import (
 // 임시 - todo - key 제작 시 구분자 기준 대신 길이 처리 필요 ( 동적 길이 또는 고정 길이 )
 func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record) error {
 	// 스키마 가져오기
+	var err error
+
 	tbl := t.schema.GetTable(tblName)
 	if tbl == nil {
 		return fmt.Errorf("table not found: %s", tblName)
@@ -27,7 +29,7 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		key := make([]byte, 0, 1024)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Seq), 10)+":")...)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Primary.Seq), 10))...)
-		val, err := record.Encode()
+		val, err := record.Encode(nil)
 		if err != nil {
 			return err
 		}
@@ -41,11 +43,14 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		var key []byte = make([]byte, 0, 1024)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Seq), 10)+":")...)
 		key = append(key, []byte(strconv.FormatInt(int64(idx.Seq), 10)+":")...)
-		fields, err := record.Encode(idx.Fields...)
+
+		// fields, err := record.Encode(nil, idx.Fields...)
+		//key = append(key, fields...)
+
+		key, err = record.Encode(key, idx.Fields...)
 		if err != nil {
 			return err
 		}
-		key = append(key, fields...)
 
 		arrKey = append(arrKey, key)
 		arrVal = append(arrVal, arrKey[0]) // pk key
