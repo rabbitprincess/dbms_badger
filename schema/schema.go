@@ -39,7 +39,7 @@ func (s *Schema) AddTable(tblName string) error {
 	}
 
 	tbl := &Table{}
-	tbl.init(len(s.Tables)+1, tblName)
+	tbl.init(TblSeq(len(s.Tables)+1), tblName)
 	s.Tables = append(s.Tables, tbl)
 	s.tblNames[tblName] = tbl
 	return nil
@@ -53,13 +53,13 @@ func (s *Schema) GetTable(tblName string) *Table {
 }
 
 type Table struct {
-	Seq      int
+	Seq      TblSeq
 	Name     string
 	Indexes  []*Index
 	idxNames map[string]*Index
 }
 
-func (t *Table) init(seq int, name string) {
+func (t *Table) init(seq TblSeq, name string) {
 	t.Seq = seq
 	t.Name = name
 	t.Indexes = make([]*Index, 0, 10)
@@ -81,7 +81,7 @@ func (t *Table) AddIndex(idxName string, idxType IdxType) error {
 	}
 
 	idx := &Index{
-		Seq:  len(t.Indexes) + 1,
+		Seq:  IdxSeq(len(t.Indexes) + 1),
 		Name: idxName,
 	}
 
@@ -103,7 +103,7 @@ func (t *Table) GetIndex(idxName string) *Index {
 }
 
 type Index struct {
-	Seq    int
+	Seq    IdxSeq
 	Type   IdxType
 	Name   string
 	Fields []*Field
@@ -121,7 +121,7 @@ type Record interface {
 }
 
 type Field struct {
-	Seq   int
+	Seq   FLdSeq
 	Name  string
 	Value interface{}
 }
