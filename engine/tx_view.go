@@ -11,12 +11,12 @@ import (
 
 type TxView struct {
 	db  *Engine
-	txn *badger.Txn
+	Txn *badger.Txn
 }
 
 func (t *TxView) Init(db *Engine, txn *badger.Txn) {
 	t.db = db
-	t.txn = txn
+	t.Txn = txn
 }
 
 //------------------------------------------------------------------------------------//
@@ -33,7 +33,7 @@ func (t *TxView) IsExist(key []byte) (bool, error) {
 }
 
 func (t *TxView) Get(key []byte) (value []byte, err error) {
-	item, err := t.txn.Get(key)
+	item, err := t.Txn.Get(key)
 	if err != nil {
 		if err == badger.ErrKeyNotFound {
 			return nil, nil
@@ -80,7 +80,7 @@ func (t *Iterator) Init(tx *TxView, reverse, keyOnly bool, prefix []byte, start 
 	t.prefix = prefix
 	t.start = start
 
-	t.badgerIt = tx.txn.NewIterator(badger.IteratorOptions{
+	t.badgerIt = tx.Txn.NewIterator(badger.IteratorOptions{
 		Reverse: t.reverse,
 		Prefix:  t.prefix,
 	})

@@ -12,31 +12,31 @@ import (
 
 func (t *TxView) RangeBETWEEN(prefix, start, end []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
 	scroll := &Scroll{}
-	scroll.init(t.txn, prefix, start, end, true, true, reverse, keyOnly, read)
+	scroll.init(t.Txn, prefix, start, end, true, true, reverse, keyOnly, read)
 	return scroll
 }
 
 func (t *TxView) RangeGT(prefix, start []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
 	scroll := &Scroll{}
-	scroll.init(t.txn, prefix, start, nil, false, true, reverse, keyOnly, read)
+	scroll.init(t.Txn, prefix, start, nil, false, true, reverse, keyOnly, read)
 	return scroll
 }
 
 func (t *TxView) RangeGE(prefix, start []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
 	scroll := &Scroll{}
-	scroll.init(t.txn, prefix, start, nil, true, true, reverse, keyOnly, read)
+	scroll.init(t.Txn, prefix, start, nil, true, true, reverse, keyOnly, read)
 	return scroll
 }
 
 func (t *TxView) RangeLT(prefix, end []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
 	scroll := &Scroll{}
-	scroll.init(t.txn, prefix, nil, end, true, false, reverse, keyOnly, read)
+	scroll.init(t.Txn, prefix, nil, end, true, false, reverse, keyOnly, read)
 	return scroll
 }
 
 func (t *TxView) RangeLE(prefix, end []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
 	scroll := &Scroll{}
-	scroll.init(t.txn, prefix, nil, end, true, true, reverse, keyOnly, read)
+	scroll.init(t.Txn, prefix, nil, end, true, true, reverse, keyOnly, read)
 	return scroll
 }
 
@@ -55,7 +55,7 @@ func (t *TxView) RangeBeginsWith(prefix []byte, reverse, keyOnly bool, read func
 	} else {
 		end = append(end, bytes.Repeat([]byte{0xFF}, 65535)...)
 	}
-	scroll.init(t.txn, nil, prefix, end, true, false, reverse, keyOnly, read)
+	scroll.init(t.Txn, nil, prefix, end, true, false, reverse, keyOnly, read)
 	return scroll
 }
 

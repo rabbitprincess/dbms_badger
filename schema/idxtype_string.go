@@ -10,11 +10,11 @@ func _() {
 	var x [1]struct{}
 	_ = x[IdxTypePrimary-0]
 	_ = x[IdxTypeUnique-1]
-	_ = x[IdxTypeIndex-2]
+	_ = x[IdxTypeRange-2]
 	_ = x[IdxTypeBitset-3]
 }
 
-const _IdxType_name = "IdxTypePrimaryIdxTypeUniqueIdxTypeIndexIdxTypeBitset"
+const _IdxType_name = "IdxTypePrimaryIdxTypeUniqueIdxTypeRangeIdxTypeBitset"
 
 var _IdxType_index = [...]uint8{0, 14, 27, 39, 52}
 

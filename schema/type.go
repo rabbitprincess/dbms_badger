@@ -18,7 +18,7 @@ const (
 	NameTblInformationSchema TblName = "information_schema"
 )
 
-type IdxSeq uint8
+type IdxSeq uint16
 
 const (
 	SeqIdxPK  IdxSeq = 0
@@ -37,7 +37,7 @@ type IdxType uint8
 const (
 	IdxTypePrimary IdxType = iota
 	IdxTypeUnique
-	IdxTypeIndex
+	IdxTypeRange
 	IdxTypeBitset
 )
 

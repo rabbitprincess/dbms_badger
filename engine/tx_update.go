@@ -8,7 +8,7 @@ type TxUpdate struct {
 }
 
 func (t *TxUpdate) Set(key, val []byte) error {
-	return t.txn.Set(key, val)
+	return t.Txn.Set(key, val)
 }
 
 func (t *TxUpdate) SetStr(key, val string) error {
@@ -31,7 +31,7 @@ func (t *TxUpdate) SetIfNotExist(key, val []byte) error {
 }
 
 func (t *TxUpdate) Delete(key []byte) error {
-	return t.txn.Delete(key)
+	return t.Txn.Delete(key)
 }
 
 func (t *TxUpdate) DeleteIfExist(key []byte) error {
