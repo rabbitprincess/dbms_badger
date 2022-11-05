@@ -745,24 +745,6 @@ func (z *Table) DecodeMsg(dc *msgp.Reader) (err error) {
 				err = msgp.WrapError(err, "Name")
 				return
 			}
-		case "Primary":
-			if dc.IsNil() {
-				err = dc.ReadNil()
-				if err != nil {
-					err = msgp.WrapError(err, "Primary")
-					return
-				}
-				z.Primary = nil
-			} else {
-				if z.Primary == nil {
-					z.Primary = new(Index)
-				}
-				err = z.Primary.DecodeMsg(dc)
-				if err != nil {
-					err = msgp.WrapError(err, "Primary")
-					return
-				}
-			}
 		case "Indexes":
 			var zb0002 uint32
 			zb0002, err = dc.ReadArrayHeader()
@@ -807,9 +789,9 @@ func (z *Table) DecodeMsg(dc *msgp.Reader) (err error) {
 
 // EncodeMsg implements msgp.Encodable
 func (z *Table) EncodeMsg(en *msgp.Writer) (err error) {
-	// map header, size 4
+	// map header, size 3
 	// write "Seq"
-	err = en.Append(0x84, 0xa3, 0x53, 0x65, 0x71)
+	err = en.Append(0x83, 0xa3, 0x53, 0x65, 0x71)
 	if err != nil {
 		return
 	}
@@ -827,23 +809,6 @@ func (z *Table) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		err = msgp.WrapError(err, "Name")
 		return
-	}
-	// write "Primary"
-	err = en.Append(0xa7, 0x50, 0x72, 0x69, 0x6d, 0x61, 0x72, 0x79)
-	if err != nil {
-		return
-	}
-	if z.Primary == nil {
-		err = en.WriteNil()
-		if err != nil {
-			return
-		}
-	} else {
-		err = z.Primary.EncodeMsg(en)
-		if err != nil {
-			err = msgp.WrapError(err, "Primary")
-			return
-		}
 	}
 	// write "Indexes"
 	err = en.Append(0xa7, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x73)
@@ -875,24 +840,13 @@ func (z *Table) EncodeMsg(en *msgp.Writer) (err error) {
 // MarshalMsg implements msgp.Marshaler
 func (z *Table) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
-	// map header, size 4
+	// map header, size 3
 	// string "Seq"
-	o = append(o, 0x84, 0xa3, 0x53, 0x65, 0x71)
+	o = append(o, 0x83, 0xa3, 0x53, 0x65, 0x71)
 	o = msgp.AppendInt(o, z.Seq)
 	// string "Name"
 	o = append(o, 0xa4, 0x4e, 0x61, 0x6d, 0x65)
 	o = msgp.AppendString(o, z.Name)
-	// string "Primary"
-	o = append(o, 0xa7, 0x50, 0x72, 0x69, 0x6d, 0x61, 0x72, 0x79)
-	if z.Primary == nil {
-		o = msgp.AppendNil(o)
-	} else {
-		o, err = z.Primary.MarshalMsg(o)
-		if err != nil {
-			err = msgp.WrapError(err, "Primary")
-			return
-		}
-	}
 	// string "Indexes"
 	o = append(o, 0xa7, 0x49, 0x6e, 0x64, 0x65, 0x78, 0x65, 0x73)
 	o = msgp.AppendArrayHeader(o, uint32(len(z.Indexes)))
@@ -940,23 +894,6 @@ func (z *Table) UnmarshalMsg(bts []byte) (o []byte, err error) {
 				err = msgp.WrapError(err, "Name")
 				return
 			}
-		case "Primary":
-			if msgp.IsNil(bts) {
-				bts, err = msgp.ReadNilBytes(bts)
-				if err != nil {
-					return
-				}
-				z.Primary = nil
-			} else {
-				if z.Primary == nil {
-					z.Primary = new(Index)
-				}
-				bts, err = z.Primary.UnmarshalMsg(bts)
-				if err != nil {
-					err = msgp.WrapError(err, "Primary")
-					return
-				}
-			}
 		case "Indexes":
 			var zb0002 uint32
 			zb0002, bts, err = msgp.ReadArrayHeaderBytes(bts)
@@ -1001,13 +938,7 @@ func (z *Table) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *Table) Msgsize() (s int) {
-	s = 1 + 4 + msgp.IntSize + 5 + msgp.StringPrefixSize + len(z.Name) + 8
-	if z.Primary == nil {
-		s += msgp.NilSize
-	} else {
-		s += z.Primary.Msgsize()
-	}
-	s += 8 + msgp.ArrayHeaderSize
+	s = 1 + 4 + msgp.IntSize + 5 + msgp.StringPrefixSize + len(z.Name) + 8 + msgp.ArrayHeaderSize
 	for za0001 := range z.Indexes {
 		if z.Indexes[za0001] == nil {
 			s += msgp.NilSize

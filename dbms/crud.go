@@ -30,12 +30,12 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		key = append(key, []byte(strconv.FormatInt(int64(idx.Seq), 10)+":")...)
 
 		var val []byte
-		if idx.Type == schema.IdxTypePrimary {
+		if idx.Type == schema.IdxTypePrimary { // pk 일 경우
 			val, err = record.Encode(nil) // set record to value
 			if err != nil {
 				return err
 			}
-		} else {
+		} else { // non pk 일 경우
 			key, err = record.Encode(key, idx.Fields...) // append index fields
 			if err != nil {
 				return err
