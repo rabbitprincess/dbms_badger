@@ -25,7 +25,7 @@ func (z *Field) DecodeMsg(dc *msgp.Reader) (err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Seq":
-			z.Seq, err = dc.ReadInt()
+			err = z.Seq.DecodeMsg(dc)
 			if err != nil {
 				err = msgp.WrapError(err, "Seq")
 				return
@@ -54,14 +54,14 @@ func (z *Field) DecodeMsg(dc *msgp.Reader) (err error) {
 }
 
 // EncodeMsg implements msgp.Encodable
-func (z Field) EncodeMsg(en *msgp.Writer) (err error) {
+func (z *Field) EncodeMsg(en *msgp.Writer) (err error) {
 	// map header, size 3
 	// write "Seq"
 	err = en.Append(0x83, 0xa3, 0x53, 0x65, 0x71)
 	if err != nil {
 		return
 	}
-	err = en.WriteInt(z.Seq)
+	err = z.Seq.EncodeMsg(en)
 	if err != nil {
 		err = msgp.WrapError(err, "Seq")
 		return
@@ -90,12 +90,16 @@ func (z Field) EncodeMsg(en *msgp.Writer) (err error) {
 }
 
 // MarshalMsg implements msgp.Marshaler
-func (z Field) MarshalMsg(b []byte) (o []byte, err error) {
+func (z *Field) MarshalMsg(b []byte) (o []byte, err error) {
 	o = msgp.Require(b, z.Msgsize())
 	// map header, size 3
 	// string "Seq"
 	o = append(o, 0x83, 0xa3, 0x53, 0x65, 0x71)
-	o = msgp.AppendInt(o, z.Seq)
+	o, err = z.Seq.MarshalMsg(o)
+	if err != nil {
+		err = msgp.WrapError(err, "Seq")
+		return
+	}
 	// string "Name"
 	o = append(o, 0xa4, 0x4e, 0x61, 0x6d, 0x65)
 	o = msgp.AppendString(o, z.Name)
@@ -128,7 +132,7 @@ func (z *Field) UnmarshalMsg(bts []byte) (o []byte, err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Seq":
-			z.Seq, bts, err = msgp.ReadIntBytes(bts)
+			bts, err = z.Seq.UnmarshalMsg(bts)
 			if err != nil {
 				err = msgp.WrapError(err, "Seq")
 				return
@@ -158,8 +162,8 @@ func (z *Field) UnmarshalMsg(bts []byte) (o []byte, err error) {
 }
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
-func (z Field) Msgsize() (s int) {
-	s = 1 + 4 + msgp.IntSize + 5 + msgp.StringPrefixSize + len(z.Name) + 6 + msgp.GuessSize(z.Value)
+func (z *Field) Msgsize() (s int) {
+	s = 1 + 4 + z.Seq.Msgsize() + 5 + msgp.StringPrefixSize + len(z.Name) + 6 + msgp.GuessSize(z.Value)
 	return
 }
 
@@ -182,7 +186,7 @@ func (z *Index) DecodeMsg(dc *msgp.Reader) (err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Seq":
-			z.Seq, err = dc.ReadInt()
+			err = z.Seq.DecodeMsg(dc)
 			if err != nil {
 				err = msgp.WrapError(err, "Seq")
 				return
@@ -238,7 +242,7 @@ func (z *Index) DecodeMsg(dc *msgp.Reader) (err error) {
 						}
 						switch msgp.UnsafeString(field) {
 						case "Seq":
-							z.Fields[za0001].Seq, err = dc.ReadInt()
+							err = z.Fields[za0001].Seq.DecodeMsg(dc)
 							if err != nil {
 								err = msgp.WrapError(err, "Fields", za0001, "Seq")
 								return
@@ -284,7 +288,7 @@ func (z *Index) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteInt(z.Seq)
+	err = z.Seq.EncodeMsg(en)
 	if err != nil {
 		err = msgp.WrapError(err, "Seq")
 		return
@@ -332,7 +336,7 @@ func (z *Index) EncodeMsg(en *msgp.Writer) (err error) {
 			if err != nil {
 				return
 			}
-			err = en.WriteInt(z.Fields[za0001].Seq)
+			err = z.Fields[za0001].Seq.EncodeMsg(en)
 			if err != nil {
 				err = msgp.WrapError(err, "Fields", za0001, "Seq")
 				return
@@ -368,7 +372,11 @@ func (z *Index) MarshalMsg(b []byte) (o []byte, err error) {
 	// map header, size 4
 	// string "Seq"
 	o = append(o, 0x84, 0xa3, 0x53, 0x65, 0x71)
-	o = msgp.AppendInt(o, z.Seq)
+	o, err = z.Seq.MarshalMsg(o)
+	if err != nil {
+		err = msgp.WrapError(err, "Seq")
+		return
+	}
 	// string "Type"
 	o = append(o, 0xa4, 0x54, 0x79, 0x70, 0x65)
 	o, err = z.Type.MarshalMsg(o)
@@ -389,7 +397,11 @@ func (z *Index) MarshalMsg(b []byte) (o []byte, err error) {
 			// map header, size 3
 			// string "Seq"
 			o = append(o, 0x83, 0xa3, 0x53, 0x65, 0x71)
-			o = msgp.AppendInt(o, z.Fields[za0001].Seq)
+			o, err = z.Fields[za0001].Seq.MarshalMsg(o)
+			if err != nil {
+				err = msgp.WrapError(err, "Fields", za0001, "Seq")
+				return
+			}
 			// string "Name"
 			o = append(o, 0xa4, 0x4e, 0x61, 0x6d, 0x65)
 			o = msgp.AppendString(o, z.Fields[za0001].Name)
@@ -424,7 +436,7 @@ func (z *Index) UnmarshalMsg(bts []byte) (o []byte, err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Seq":
-			z.Seq, bts, err = msgp.ReadIntBytes(bts)
+			bts, err = z.Seq.UnmarshalMsg(bts)
 			if err != nil {
 				err = msgp.WrapError(err, "Seq")
 				return
@@ -479,7 +491,7 @@ func (z *Index) UnmarshalMsg(bts []byte) (o []byte, err error) {
 						}
 						switch msgp.UnsafeString(field) {
 						case "Seq":
-							z.Fields[za0001].Seq, bts, err = msgp.ReadIntBytes(bts)
+							bts, err = z.Fields[za0001].Seq.UnmarshalMsg(bts)
 							if err != nil {
 								err = msgp.WrapError(err, "Fields", za0001, "Seq")
 								return
@@ -520,12 +532,12 @@ func (z *Index) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *Index) Msgsize() (s int) {
-	s = 1 + 4 + msgp.IntSize + 5 + z.Type.Msgsize() + 5 + msgp.StringPrefixSize + len(z.Name) + 7 + msgp.ArrayHeaderSize
+	s = 1 + 4 + z.Seq.Msgsize() + 5 + z.Type.Msgsize() + 5 + msgp.StringPrefixSize + len(z.Name) + 7 + msgp.ArrayHeaderSize
 	for za0001 := range z.Fields {
 		if z.Fields[za0001] == nil {
 			s += msgp.NilSize
 		} else {
-			s += 1 + 4 + msgp.IntSize + 5 + msgp.StringPrefixSize + len(z.Fields[za0001].Name) + 6 + msgp.GuessSize(z.Fields[za0001].Value)
+			s += 1 + 4 + z.Fields[za0001].Seq.Msgsize() + 5 + msgp.StringPrefixSize + len(z.Fields[za0001].Name) + 6 + msgp.GuessSize(z.Fields[za0001].Value)
 		}
 	}
 	return
@@ -734,7 +746,7 @@ func (z *Table) DecodeMsg(dc *msgp.Reader) (err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Seq":
-			z.Seq, err = dc.ReadInt()
+			err = z.Seq.DecodeMsg(dc)
 			if err != nil {
 				err = msgp.WrapError(err, "Seq")
 				return
@@ -795,7 +807,7 @@ func (z *Table) EncodeMsg(en *msgp.Writer) (err error) {
 	if err != nil {
 		return
 	}
-	err = en.WriteInt(z.Seq)
+	err = z.Seq.EncodeMsg(en)
 	if err != nil {
 		err = msgp.WrapError(err, "Seq")
 		return
@@ -843,7 +855,11 @@ func (z *Table) MarshalMsg(b []byte) (o []byte, err error) {
 	// map header, size 3
 	// string "Seq"
 	o = append(o, 0x83, 0xa3, 0x53, 0x65, 0x71)
-	o = msgp.AppendInt(o, z.Seq)
+	o, err = z.Seq.MarshalMsg(o)
+	if err != nil {
+		err = msgp.WrapError(err, "Seq")
+		return
+	}
 	// string "Name"
 	o = append(o, 0xa4, 0x4e, 0x61, 0x6d, 0x65)
 	o = msgp.AppendString(o, z.Name)
@@ -883,7 +899,7 @@ func (z *Table) UnmarshalMsg(bts []byte) (o []byte, err error) {
 		}
 		switch msgp.UnsafeString(field) {
 		case "Seq":
-			z.Seq, bts, err = msgp.ReadIntBytes(bts)
+			bts, err = z.Seq.UnmarshalMsg(bts)
 			if err != nil {
 				err = msgp.WrapError(err, "Seq")
 				return
@@ -938,7 +954,7 @@ func (z *Table) UnmarshalMsg(bts []byte) (o []byte, err error) {
 
 // Msgsize returns an upper bound estimate of the number of bytes occupied by the serialized message
 func (z *Table) Msgsize() (s int) {
-	s = 1 + 4 + msgp.IntSize + 5 + msgp.StringPrefixSize + len(z.Name) + 8 + msgp.ArrayHeaderSize
+	s = 1 + 4 + z.Seq.Msgsize() + 5 + msgp.StringPrefixSize + len(z.Name) + 8 + msgp.ArrayHeaderSize
 	for za0001 := range z.Indexes {
 		if z.Indexes[za0001] == nil {
 			s += msgp.NilSize

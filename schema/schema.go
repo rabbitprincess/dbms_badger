@@ -10,7 +10,7 @@ const (
 	FID_NAME_PK                 = "0"
 )
 
-//go:generate msgp
+//go:generate go run github.com/tinylib/msgp@latest
 
 // TODO: 임시 - 동시 접근을 막기 위한 mutex lock 필요
 type Schema struct {

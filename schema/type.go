@@ -2,7 +2,9 @@ package schema
 
 import "math"
 
-//go:generate msgp
+//go:generate go run github.com/tinylib/msgp@latest
+
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type=TblSeq
 type TblSeq uint16
 
 const (
@@ -29,6 +31,7 @@ const (
 	NameIdxPk IdxName = "0"
 )
 
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type=IdxType
 type IdxType uint8
 
 const (
@@ -37,20 +40,6 @@ const (
 	IdxTypeIndex
 	IdxTypeBitset
 )
-
-func (t IdxType) String() string {
-	switch t {
-	case IdxTypePrimary:
-		return "primary"
-	case IdxTypeUnique:
-		return "unique"
-	case IdxTypeIndex:
-		return "index"
-	case IdxTypeBitset:
-		return "bitset"
-	}
-	return ""
-}
 
 type FLdSeq uint16
 

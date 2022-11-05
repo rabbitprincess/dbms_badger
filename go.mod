@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.3
 	github.com/tinylib/msgp v1.1.6
+	golang.org/x/tools v0.0.0-20210106214847-113979e3529a
 )
 
 require (
