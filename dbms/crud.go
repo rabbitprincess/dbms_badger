@@ -57,15 +57,20 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 				return err
 			}
 		case schema.IdxTypePrimary:
-			// Value = < serialized record >
-			v, err := record.Encode(nil)
-			if err != nil {
-				return err
-			}
-			err = txn.Set(key, v)
-			if err != nil {
-				return err
-			}
+			// Table has only one primary key, and it is always at index 0
+			// But, this for loop starts from 1
+			panic("unreachable")
+			/*
+				// Value = < serialized record >
+				v, err := record.Encode(nil)
+				if err != nil {
+					return err
+				}
+				err = txn.Set(key, v)
+				if err != nil {
+					return err
+				}
+			*/
 		default:
 			return schema.ErrInvalidIndexType
 		}
