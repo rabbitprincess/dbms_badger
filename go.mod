@@ -4,7 +4,9 @@ go 1.19
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.3
+	github.com/dgraph-io/sroar v0.0.0-20220527172339-b92b7eaaf6e0
 	github.com/tinylib/msgp v1.1.6
+	github.com/valyala/bytebufferpool v1.0.0
 	golang.org/x/tools v0.0.0-20210106214847-113979e3529a
 )
 

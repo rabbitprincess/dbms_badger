@@ -112,12 +112,19 @@ type Index struct {
 type Record interface {
 	Get(fieldName string) *Field
 
-	// Encode appends the binary representation of the fields to the byte slice,
+	// Encode appends the binary representation of the record to the byte slice,
 	// and returns the updated slice.
-	Encode(b []byte, fields ...*Field) ([]byte, error)
+	Encode(b []byte) ([]byte, error)
 
-	// Decode decodes the binary representation of the fields from the byte slice.
-	Decode(b []byte, fields ...*Field) error
+	// Decode decodes the binary representation of the record from the byte slice.
+	Decode(b []byte) error
+
+	// EncodeField appends the binary representation of the field to the byte slice,
+	// and returns the updated slice.
+	EncodeField(b []byte, id FLdSeq) ([]byte, error)
+
+	// DecodeField decodes the binary representation of the field from the byte slice.
+	DecodeField(b []byte, id FLdSeq) error
 }
 
 type Field struct {
