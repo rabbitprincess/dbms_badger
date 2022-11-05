@@ -41,8 +41,22 @@ func (t *TxView) RangeLE(prefix, end []byte, reverse, keyOnly bool, read func(ke
 }
 
 // TODO: 임시 continue if target == key
-func (t *TxView) RangeNE(prefix, target []byte, reverse, keyOnly bool, read func(key, value []byte)) *Scroll {
+func (t *TxView) RangeNE(prefix, target []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
 	return nil
+}
+
+func (t *TxView) RangeBeginsWith(prefix []byte, reverse, keyOnly bool, read func(key, value []byte) error) *Scroll {
+	scroll := &Scroll{}
+
+	end := make([]byte, len(prefix))
+	copy(end, prefix) // copy end
+	if end[len(end)-1] < 0xFF {
+		end[len(end)-1]++
+	} else {
+		end = append(end, bytes.Repeat([]byte{0xFF}, 65535)...)
+	}
+	scroll.init(t.txn, nil, prefix, end, true, false, reverse, keyOnly, read)
+	return scroll
 }
 
 //------------------------------------------------------------------------------//
@@ -78,6 +92,7 @@ func (t *Scroll) init(txn *badger.Txn, prefix, start, end []byte, includeStart, 
 	// init iterator
 	{
 		opt := badger.DefaultIteratorOptions
+		opt.Prefix = make([]byte, len(prefix))
 		copy(opt.Prefix, prefix) // set prefix
 		if t.reverse == true {   // set reverse
 			opt.Reverse = true

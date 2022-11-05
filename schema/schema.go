@@ -6,6 +6,8 @@ import (
 
 const (
 	TBL_NAME_INFORMATION_SCHEMA = "information_schema"
+	FLD_IDX_PK                  = 0
+	FID_NAME_PK                 = "0"
 )
 
 //go:generate msgp
@@ -36,10 +38,8 @@ func (s *Schema) AddTable(tblName string) error {
 		return fmt.Errorf("table already exists: %s", tblName)
 	}
 
-	tbl := &Table{
-		Seq:  len(s.Tables),
-		Name: tblName,
-	}
+	tbl := &Table{}
+	tbl.init(len(s.Tables)+1, tblName)
 	s.Tables = append(s.Tables, tbl)
 	s.tblNames[tblName] = tbl
 	return nil
@@ -55,34 +55,27 @@ func (s *Schema) GetTable(tblName string) *Table {
 type Table struct {
 	Seq      int
 	Name     string
-	Primary  *Index
 	Indexes  []*Index
 	idxNames map[string]*Index
 }
 
-func (t *Table) AddPrimaryIndex(idxName string) error {
-	if t.Primary != nil {
-		return fmt.Errorf("primary index already exists: %s", idxName)
-	}
+func (t *Table) init(seq int, name string) {
+	t.Seq = seq
+	t.Name = name
+	t.Indexes = make([]*Index, 0, 10)
+	t.idxNames = make(map[string]*Index)
 
-	idx := &Index{
-		Seq:  0,
-		Name: idxName,
+	// init pk
+	pk := &Index{
+		Seq:  FLD_IDX_PK,
+		Name: FID_NAME_PK,
+		Type: IdxTypePrimary,
 	}
-	t.Primary = idx
-	return nil
-}
-
-func (t *Table) GetPrimaryIndex() *Index {
-	return t.Primary
+	t.Indexes = append(t.Indexes, pk)
+	t.idxNames[FID_NAME_PK] = pk
 }
 
 func (t *Table) AddIndex(idxName string, idxType IdxType) error {
-	if t.Indexes == nil {
-		t.Indexes = make([]*Index, 0, 10)
-		t.idxNames = make(map[string]*Index)
-	}
-
 	if _, ok := t.idxNames[idxName]; ok {
 		return fmt.Errorf("index already exists: %s", idxName)
 	}

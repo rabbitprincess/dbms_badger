@@ -122,21 +122,3 @@ func (t *Iterator) ValueCopy() ([]byte, error) {
 	var val []byte
 	return t.badgerIt.Item().ValueCopy(val)
 }
-
-//-----------------------------------------------------------------//
-// 임시 - range type
-/*
-type TD_range int
-
-const (
-	TD_range_empty TD_range = iota
-	TD_range_beginWith
-	TD_range_between
-	TD_range_lt
-	TD_range_le
-	TD_range_ge
-	TD_range_gt
-	TD_range_eq
-	TD_range_ne
-)
-*/

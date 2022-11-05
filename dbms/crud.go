@@ -23,37 +23,28 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 	arrKey := make([][]byte, 0, len(tbl.Indexes)+1)
 	arrVal := make([][]byte, 0, len(tbl.Indexes)+1)
 
-	// 임시 - primary key 와 index make 를 같은 코드로 묶어야 할듯.
-	// set record to primary key
-	{
-		key := make([]byte, 0, 1024)
-		key = append(key, []byte(strconv.FormatInt(int64(tbl.Seq), 10)+":")...)
-		key = append(key, []byte(strconv.FormatInt(int64(tbl.Primary.Seq), 10))...)
-		val, err := record.Encode(nil)
-		if err != nil {
-			return err
-		}
-
-		arrKey = append(arrKey, key)
-		arrVal = append(arrVal, val)
-	}
-
 	// set record to index
 	for _, idx := range tbl.Indexes {
 		var key []byte = make([]byte, 0, 1024)
 		key = append(key, []byte(strconv.FormatInt(int64(tbl.Seq), 10)+":")...)
 		key = append(key, []byte(strconv.FormatInt(int64(idx.Seq), 10)+":")...)
 
-		// fields, err := record.Encode(nil, idx.Fields...)
-		//key = append(key, fields...)
-
-		key, err = record.Encode(key, idx.Fields...)
-		if err != nil {
-			return err
+		var val []byte
+		if idx.Type == schema.IdxTypePrimary {
+			val, err = record.Encode(nil) // set record to value
+			if err != nil {
+				return err
+			}
+		} else {
+			key, err = record.Encode(key, idx.Fields...) // append index fields
+			if err != nil {
+				return err
+			}
+			key = append(key, arrKey[0]...) // append primary key
 		}
 
 		arrKey = append(arrKey, key)
-		arrVal = append(arrVal, arrKey[0]) // pk key
+		arrVal = append(arrVal, val) // pk key
 	}
 
 	// set kv
@@ -74,6 +65,16 @@ func (t *DBMS) Exist(txn *engine.TxView, tblName string, idxName string, record 
 
 // TODO: Implement Get
 func (t *DBMS) Get(txn *engine.TxView, tblName string, idxName string, record schema.Record) (value []byte, err error) {
+	// 스키마 가져오기
+	tbl := t.schema.GetTable(tblName)
+	if tbl == nil {
+		return nil, fmt.Errorf("table not found: %s", tblName)
+	}
+	idx := tbl.GetIndex(idxName)
+	if idx == nil {
+		return nil, fmt.Errorf("index not found: %s", idxName)
+	}
+
 	// record 를 이용해 가져와서 key 제작
 	var key []byte
 
