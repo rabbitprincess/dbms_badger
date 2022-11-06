@@ -24,7 +24,12 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 
 	// set record by index
 	for i := 1; i < len(tbl.Indexes); i++ {
-		key, err := schema.AppendIndexKey(nil, tbl, tbl.Indexes[i], record)
+		idx := tbl.Indexes[i]
+		if idx == nil {
+			return fmt.Errorf("idx not found: %d", i)
+		}
+
+		key, err := schema.AppendIndexKey(nil, tbl, idx, record)
 		if err != nil {
 			return err
 		}
