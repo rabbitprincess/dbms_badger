@@ -22,7 +22,7 @@ type IdxSeq uint16
 
 const (
 	SeqIdxPK  IdxSeq = 0
-	SeqIdxMax IdxSeq = math.MaxUint8
+	SeqIdxMax IdxSeq = math.MaxUint16
 )
 
 type IdxName string

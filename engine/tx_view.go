@@ -33,6 +33,15 @@ func (t *TxView) IsExist(key []byte) (bool, error) {
 }
 
 func (t *TxView) Get(key []byte) (value []byte, err error) {
+	item, err := t.GetItem(key)
+	if err != nil {
+		return nil, err
+	}
+
+	return item.ValueCopy(nil)
+}
+
+func (t *TxView) GetItem(key []byte) (*badger.Item, error) {
 	item, err := t.Txn.Get(key)
 	if err != nil {
 		if err == badger.ErrKeyNotFound {
@@ -40,16 +49,7 @@ func (t *TxView) Get(key []byte) (value []byte, err error) {
 		}
 		return nil, err
 	}
-
-	fn := func(val []byte) error {
-		value = val
-		return nil
-	}
-	err = item.Value(fn)
-	if err != nil {
-		return nil, err
-	}
-	return
+	return item, nil
 }
 
 func (t *TxView) GetStr(key string) (val []byte, err error) {

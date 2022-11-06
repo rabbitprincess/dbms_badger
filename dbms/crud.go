@@ -31,7 +31,7 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 		switch tbl.Indexes[i].Type {
 		case schema.IdxTypeBitset:
 			// IF BITSET INDEX
-			v, err := txn.Txn.Get(key)
+			v, err := txn.GetItem(key)
 			if err != nil && err != badger.ErrKeyNotFound {
 				return err
 			}
