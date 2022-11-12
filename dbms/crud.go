@@ -19,8 +19,24 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 	}
 
 	// TODO: 임시 - 중복 값 검사 필요 ( primary key, unique key )
-	// TODO: 임시 - pk 생성 필요
 	var pk uint64 = 1
+	if len(tbl.Indexes) == 0 {
+		return fmt.Errorf("empty idx in table: %s", tblName)
+	}
+	// set pk record in index
+	pkIdx := tbl.Indexes[0]
+	key, err := schema.AppendIndexKey(nil, tbl, pkIdx, record)
+	if err != nil {
+		return err
+	}
+	value, err := record.EncodeAll(nil)
+	if err != nil {
+		return err
+	}
+	err = txn.Set(key, value)
+	if err != nil {
+		return err
+	}
 
 	// set record by index
 	for i := 1; i < len(tbl.Indexes); i++ {
