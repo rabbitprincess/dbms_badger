@@ -4,6 +4,11 @@ import (
 	"github.com/dgraph-io/badger/v3"
 )
 
+func NewEngine() *Engine {
+	engine := &Engine{}
+	return engine
+}
+
 type Engine struct {
 	badger *badger.DB
 }

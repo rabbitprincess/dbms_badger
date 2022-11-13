@@ -12,6 +12,11 @@ const (
 
 //go:generate go run github.com/tinylib/msgp@latest
 
+func NewSchema() *Schema {
+	schema := &Schema{}
+	return schema
+}
+
 // TODO: 임시 - 동시 접근을 막기 위한 mutex lock 필요
 type Schema struct {
 	Tables   []*Table
