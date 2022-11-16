@@ -24,9 +24,19 @@ type Field interface {
 	Decode(b []byte) error
 }
 
+type Operator uint16
+
+const (
+	OperatorEqual Operator = 1 << iota
+	OperatorNotEqual
+	OperatorLess
+	OperatorLessEqual
+	OperatorGreater
+	OperatorGreaterEqual
+)
+
 type Where struct {
-	Table    string
-	Column   string
-	Operator string
-	Value    Field
+	Table  string
+	Column string
+	Field  Field
 }
