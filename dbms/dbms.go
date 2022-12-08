@@ -61,6 +61,23 @@ func (t *DBMS) InitSchema() error {
 	})
 }
 
+func (t *DBMS) UpdateSchema() error {
+	return t.engine.TxUpdate(func(update *engine.TxUpdate) error {
+		keyInformationSchema := make([]byte, 0, 3)
+		keyInformationSchema = append(keyInformationSchema, "T"...)
+		keyInformationSchema = binary.LittleEndian.AppendUint16(keyInformationSchema, uint16(schema.SeqTblInformationSchema))
+		value, err := t.schema.Save()
+		if err != nil {
+			return err
+		}
+		err = update.Set(keyInformationSchema, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 // 초기화 시 engine 의 kv 저장소에 저장되어있는 information_schema 에 따라 테이블 스키마 복구
 // 시나리오 정리 - 테이블과 인덱스 추가
 // 테이블에 레코드 추가
