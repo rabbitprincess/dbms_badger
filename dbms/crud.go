@@ -100,9 +100,14 @@ func (t *DBMS) Insert(txn *engine.TxUpdate, tblName string, record schema.Record
 	return nil
 }
 
-// TODO: Implement Exist
 func (t *DBMS) Exist(txn *engine.TxView, tblName string, idxName string, record schema.Record) (exist bool, err error) {
-
+	value, err := t.Get(txn, tblName, idxName, record)
+	if err != nil {
+		return false, err
+	}
+	if value == nil {
+		return false, nil
+	}
 	return true, nil
 }
 
@@ -126,9 +131,30 @@ func (t *DBMS) Get(txn *engine.TxView, tblName string, idxName string, record sc
 	// pk 가 아닐 경우 pk get
 
 	// key 로 value get
+	return txn.Get(key)
+}
 
-	txn.Get(key)
-	return
+func (t *DBMS) Delete(txn *engine.TxUpdate, tblName string, idxName string, record schema.Record) (err error) {
+	// get schema
+	tbl := t.schema.GetTable(tblName)
+	if tbl == nil {
+		return fmt.Errorf("table not found: %s", tblName)
+	}
+	idx := tbl.GetIndex(idxName)
+	if idx == nil {
+		return fmt.Errorf("index not found: %s", idxName)
+	}
+
+	// record 를 이용해 가져와서 key 제작
+	key, err := schema.AppendIndexKey(nil, tbl, idx, record)
+	if err != nil {
+		return err
+	}
+
+	// pk 가 아닐 경우 pk get
+
+	// key 로 value delete
+	return txn.Delete(key)
 }
 
 // TODO: Implement Range
