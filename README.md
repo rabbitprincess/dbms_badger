@@ -1,7 +1,7 @@
 # dbms_badger
 database management system implement badgerdb ( github.com/dgraph-io/badger/v3 )
 
-do not use now ( in production )
+move to https://github.com/unsafe-risk/dbms
 
 support range type
   - beginWith
